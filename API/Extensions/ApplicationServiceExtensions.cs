@@ -1,4 +1,5 @@
 using API.Data;
+using API.Interfaces;
 using API.Services.Auth;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,8 +11,11 @@ public static class ApplicationServiceExtensions
     {
         services.AddDbContext<DataContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+        services.AddCors();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
+        services.AddScoped<IAuthRepository, AuthRepository>();
+        services.AddScoped<ILoginService, LoginService>();
         
         return services;
     }
