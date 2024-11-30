@@ -16,6 +16,8 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IAuthRepository, AuthRepository>();
         services.AddScoped<ILoginService, LoginService>();
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<IExpenseRepository, ExpenseRepository>();
         
         return services;
     }
