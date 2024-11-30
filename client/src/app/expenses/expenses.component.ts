@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import {IExpense} from "../_models/expense";
+import {environment} from "../../environments/environment";
 
 @Component({
   selector: 'app-expense',
@@ -10,6 +12,7 @@ export class ExpenseComponent implements OnInit {
   isModalOpen: boolean = false;
   modalTitle: string = '';
   currentExpense: any = {};
+  private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
@@ -18,7 +21,7 @@ export class ExpenseComponent implements OnInit {
   }
 
   loadExpenses(): void {
-    this.http.get<any[]>('/api/expenses').subscribe((data) => {
+    this.http.get<any[]>(this.baseUrl + 'expense').subscribe((data) => {
       this.expenses = data;
     });
   }
@@ -45,14 +48,14 @@ export class ExpenseComponent implements OnInit {
     this.http.delete(`/api/expenses/${id}`).subscribe(() => this.loadExpenses());
   }
 
-  onSave(expense: any): void {
+  onSave(expense: IExpense): void {
     if (expense.id) {
-      this.http.put(`/api/expenses/${expense.id}`, expense).subscribe(() => {
+      this.http.put(`/api/expense/${expense.id}`, expense).subscribe(() => {
         this.isModalOpen = false;
         this.loadExpenses();
       });
     } else {
-      this.http.post('/api/expenses', expense).subscribe(() => {
+      this.http.post(this.baseUrl + 'expense', expense).subscribe(() => {
         this.isModalOpen = false;
         this.loadExpenses();
       });
