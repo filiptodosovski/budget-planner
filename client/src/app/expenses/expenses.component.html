@@ -5,41 +5,104 @@
   >
     Add Expense
   </button>
-
   <table class="w-full table-auto border-collapse border border-gray-300">
     <thead>
     <tr class="bg-gray-200">
-      <th class="px-4 py-2 border">Month</th>
-      <th class="px-4 py-2 border">Year</th>
       <th class="px-4 py-2 border">Category</th>
-      <th class="px-4 py-2 border">Amount</th>
-      <th class="px-4 py-2 border">Type</th>
-      <th class="px-4 py-2 border">Actions</th>
+      <ng-container *ngFor="let groupedExpense of expenses">
+        <th class="px-4 py-2 border">
+          {{ groupedExpense.month }} {{ groupedExpense.year }} (Planned)
+        </th>
+        <th class="px-4 py-2 border">
+          {{ groupedExpense.month }} {{ groupedExpense.year }} (Actual)
+        </th>
+        <th class="px-4 py-2 border">Actions</th>
+      </ng-container>
     </tr>
     </thead>
+
     <tbody>
-    <tr *ngFor="let expense of expenses">
-      <td class="px-4 py-2 border">{{ expense.month }}</td>
-      <td class="px-4 py-2 border">{{ expense.year }}</td>
-      <td class="px-4 py-2 border">{{ expense.category }}</td>
-      <td class="px-4 py-2 border">{{ expense.amount | number: '1.2-2' }}</td>
-      <td class="px-4 py-2 border">{{ expense.type }}</td>
-      <td class="px-4 py-2 border">
-        <button
-          class="px-2 py-1 mr-2 text-white bg-blue-500 rounded hover:bg-blue-600"
-          (click)="editExpense(expense)"
-        >
-          Edit
-        </button>
-        <button
-          class="px-2 py-1 text-white bg-red-500 rounded hover:bg-red-600"
-          (click)="deleteExpense(expense.id)"
-        >
-          Delete
-        </button>
-      </td>
-    </tr>
+    <ng-container *ngFor="let category of categories">
+      <tr>
+        <td class="px-4 py-2 border">{{ category }}</td>
+
+        <ng-container *ngFor="let groupedExpense of expenses">
+          <td class="px-4 py-2 border">
+            <ng-container
+              *ngIf="
+                  getExpenseForCategoryAndType(groupedExpense, category, 'planned') as plannedExpense;
+                  else noPlannedExpense
+                "
+            >
+              {{ plannedExpense.amount  }}
+            </ng-container>
+            <ng-template #noPlannedExpense>0</ng-template>
+          </td>
+
+          <td class="px-4 py-2 border">
+            <ng-container
+              *ngIf="
+                  getExpenseForCategoryAndType(groupedExpense, category, 'actual') as actualExpense;
+                  else noActualExpense
+                "
+            >
+              {{ actualExpense.amount }}
+            </ng-container>
+            <ng-template #noActualExpense>0</ng-template>
+          </td>
+
+          <td class="px-4 py-2 border">
+            <ng-container
+              *ngIf="getExpenseForCategoryAndType(groupedExpense, category, 'planned') as plannedExpense"
+            >
+              <button
+                class="px-2 py-1 mr-2 text-white bg-blue-500 rounded hover:bg-blue-600"
+                (click)="editExpense(plannedExpense, groupedExpense.year, groupedExpense.month)"
+              >
+                Edit Planned
+              </button>
+            </ng-container>
+            <ng-container
+              *ngIf="getExpenseForCategoryAndType(groupedExpense, category, 'actual') as actualExpense"
+            >
+              <button
+                class="px-2 py-1 mr-2 text-white bg-blue-500 rounded hover:bg-blue-600"
+                (click)="editExpense(actualExpense, groupedExpense.year, groupedExpense.month)"
+              >
+                Edit Actual
+              </button>
+            </ng-container>
+
+            <ng-container
+              *ngIf="getExpenseForCategoryAndType(groupedExpense, category, 'planned')  || getExpenseForCategoryAndType(groupedExpense, category, 'actual')"
+            >
+              <button
+                class="px-2 py-1 text-white bg-red-500 rounded hover:bg-red-600"
+                (click)="deleteBothExpenses(groupedExpense, category)"
+              >
+                Delete
+              </button>
+            </ng-container>
+          </td>
+        </ng-container>
+      </tr>
+    </ng-container>
     </tbody>
+
+    <tfoot>
+    <tr class="bg-gray-100 font-bold">
+      <td class="px-4 py-2 border">Total</td>
+      <ng-container *ngFor="let groupedExpense of expenses">
+        <td class="px-4 py-2 border">
+          {{ calculateTotal(groupedExpense, 'planned') }}
+        </td>
+        <td class="px-4 py-2 border">
+          {{ calculateTotal(groupedExpense, 'actual') }}
+        </td>
+        <td class="px-4 py-2 border"></td>
+      </ng-container>
+    </tr>
+    </tfoot>
   </table>
 
   <app-modal
@@ -48,5 +111,6 @@
     [expense]="currentExpense"
     (save)="onSave($event)"
     (cancel)="onCancel()"
+    [isEditMode]="isEditMode"
   ></app-modal>
 </div>

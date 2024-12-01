@@ -1,8 +1,9 @@
-import { Component, EventEmitter, Input, Output  } from '@angular/core';
-import {MonthService} from "../../_services/months.service";
-import {Months} from "../../_models/months";
-import {CategoryService} from "../../_services/category.service";
-import {ICategory} from "../../_models/category";
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { MonthService } from "../../_services/months.service";
+import { Months } from "../../_models/months";
+import { CategoryService } from "../../_services/category.service";
+import { ICategory } from "../../_models/category";
+import { IExpense } from "../../_models/expense";
 
 @Component({
   selector: 'app-modal',
@@ -10,36 +11,33 @@ import {ICategory} from "../../_models/category";
 })
 export class ExpenseModalComponent {
   @Input() title: string = '';
-  @Input() expense: any = {}; // Assume expense has a property 'year' to store the selected year
-  @Output() save = new EventEmitter<any>();
+  @Input() expense: IExpense = this.initializeExpense();
+  @Input() isEditMode: boolean = false;
+  @Output() save = new EventEmitter<IExpense>();
   @Output() cancel = new EventEmitter<void>();
 
-
-  searchTerm: string = ''; // This is used for filtering the months
+  searchTerm: string = '';
   categorySearchTerm: string = '';
-  monthOptions: string[] = []; // Initially empty, will be populated by the service
+  monthOptions: string[] = [];
   filteredMonths: string[] = [];
-  currentYear: number = new Date().getFullYear(); // Get the current year
-  categories: ICategory[] = [];  // Categories fetched from API
+  currentYear: number = new Date().getFullYear();
+  categories: ICategory[] = [];
   filteredCategories: ICategory[] = [];
+  years: number[] = [];
 
-  years: number[] = []; // Array to hold the years from the current year to 2035
+  constructor(private monthService: MonthService, private categoryService: CategoryService) {}
 
-  constructor(private monthService: MonthService, private categoryService: CategoryService) { }
-
-  ngOnInit() {
-    this.loadMonths(); // Call the service to load months when the component initializes
-    this.generateYears(); // Generate the years list
-    this.loadCategories()
+  ngOnInit(): void {
+    this.loadMonths();
+    this.generateYears();
+    this.loadCategories();
   }
 
-  loadMonths(): void {
+  private loadMonths(): void {
     this.monthService.getMonths().subscribe(
       (response: Months) => {
-        this.monthOptions = response.months; // Assign fetched months to the monthOptions array
-        this.filteredMonths = this.monthOptions; // Initially, display all months
-
-        // Set the default selected month based on expense or use the first month in the list
+        this.monthOptions = response.months;
+        this.filteredMonths = [...this.monthOptions];
         this.searchTerm = this.expense?.month || this.monthOptions[0];
       },
       (error) => {
@@ -48,30 +46,24 @@ export class ExpenseModalComponent {
     );
   }
 
-  filterMonths() {
+  filterMonths(): void {
     this.filteredMonths = this.monthOptions.filter(month =>
       month.toLowerCase().includes(this.searchTerm.toLowerCase())
     );
   }
 
-  // Generate years from the current year to 2035
-  generateYears(): void {
+  private generateYears(): void {
     const startYear = this.currentYear;
     const endYear = 2035;
-    this.years = [];
-    for (let year = startYear; year <= endYear; year++) {
-      this.years.push(year);
-    }
-
+    this.years = Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
     this.expense.year = this.expense.year || this.currentYear;
   }
 
-  loadCategories(): void {
+  private loadCategories(): void {
     this.categoryService.getCategories().subscribe(
       (categories: ICategory[]) => {
-        // Map category objects to just names for easier display
-        this.categories = categories
-        this.filteredCategories = [...this.categories]; // Initialize filtered categories
+        this.categories = categories;
+        this.filteredCategories = [...categories];
       },
       (error) => {
         console.error('Error fetching categories:', error);
@@ -79,32 +71,24 @@ export class ExpenseModalComponent {
     );
   }
 
-
-
   onCategorySelect(category: ICategory): void {
-    this.categorySearchTerm = category.name;  // Only assign the category name to the search term
-    this.expense.category = category.name;  // Optionally, set the selected category in your expense model
+    this.categorySearchTerm = category.name;
+    this.expense.category = category.name;
   }
 
-// Adjusting the filterCategories function to properly filter based on the name
-  filterCategories() {
-    this.filteredCategories = this.categories.filter((category: ICategory) =>
-      category.name.toLowerCase().includes(this.categorySearchTerm.toLowerCase())  // Compare names
+  filterCategories(): void {
+    this.filteredCategories = this.categories.filter(category =>
+      category.name.toLowerCase().includes(this.categorySearchTerm.toLowerCase())
     );
   }
 
-  addNewCategory() {
+  addNewCategory(): void {
     if (this.categorySearchTerm.trim()) {
-      const newCategoryName = this.categorySearchTerm.trim(); // Get the name directly
+      const newCategoryName = this.categorySearchTerm.trim();
       this.categoryService.addCategory({ name: newCategoryName }).subscribe(
         () => {
-          // Reload the categories after adding the new one
           this.loadCategories();
-
-          // Optionally, set the expense's category to the new one
           this.expense.category = newCategoryName;
-
-          // Clear the search term
           this.categorySearchTerm = '';
         },
         (error) => {
@@ -114,26 +98,34 @@ export class ExpenseModalComponent {
     }
   }
 
-  // addExpense(): void {
-  //   this.expenseService.addExpense(this.expense).subscribe(
-  //     (response: IExpense) => {
-  //       console.log('Expense added:', response);
-  //       this.save.emit(response);
-  //     },
-  //     (error) => console.error('Error adding expense:', error)
-  //   );
-  // }
-
-
-
   onSave(): void {
-    this.expense.month = this.searchTerm; // Save the selected month
-    this.expense.category = this.categorySearchTerm;
-    this.expense.amount = parseFloat(this.expense.amount.toFixed(2));
-    this.save.emit(this.expense);
+    if (this.isValidExpense(this.expense)) {
+      this.expense.month = this.searchTerm;
+      this.expense.category = this.categorySearchTerm;
+      this.expense.amount = parseFloat(this.expense.amount.toFixed(2));
+      this.save.emit(this.expense);
+    }
   }
 
   onCancel(): void {
     this.cancel.emit();
+  }
+
+  private isValidExpense(expense: IExpense): boolean {
+    if (!expense.amount || expense.amount <= 0) {
+      console.error('Invalid amount');
+      return false;
+    }
+    return true;
+  }
+
+  private initializeExpense(): IExpense {
+    return {
+      month: '',
+      year:0,
+      category: '',
+      amount: 0.0,
+      type: '',
+    };
   }
 }
