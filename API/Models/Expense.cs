@@ -8,4 +8,6 @@ public class Expense
     public string Category { get; set; }
     public int Year { get; set; }
     public string Type { get; set; }
+    
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow; 
 }
