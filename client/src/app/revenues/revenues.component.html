@@ -1,0 +1,116 @@
+<div class="p-4">
+  <button
+    class="mb-4 px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600"
+    (click)="addRevenue()"
+  >
+    Add Revenue
+  </button>
+  <table class="w-full table-auto border-collapse border border-gray-300">
+    <thead>
+    <tr class="bg-gray-200">
+      <th class="px-4 py-2 border">Category</th>
+      <ng-container *ngFor="let groupedRevenue of revenues">
+        <th class="px-4 py-2 border">
+          {{ groupedRevenue.month }} {{ groupedRevenue.year }} (Planned)
+        </th>
+        <th class="px-4 py-2 border">
+          {{ groupedRevenue.month }} {{ groupedRevenue.year }} (Actual)
+        </th>
+        <th class="px-4 py-2 border">Actions</th>
+      </ng-container>
+    </tr>
+    </thead>
+
+    <tbody>
+    <ng-container *ngFor="let category of categories">
+      <tr>
+        <td class="px-4 py-2 border">{{ category }}</td>
+
+        <ng-container *ngFor="let groupedRevenue of revenues">
+          <td class="px-4 py-2 border">
+            <ng-container
+              *ngIf="
+                  getRevenueForCategoryAndType(groupedRevenue, category, 'planned') as plannedRevenue;
+                  else noPlannedRevenue
+                "
+            >
+              {{ plannedRevenue.amount  }}
+            </ng-container>
+            <ng-template #noPlannedRevenue>0</ng-template>
+          </td>
+
+          <td class="px-4 py-2 border">
+            <ng-container
+              *ngIf="
+                  getRevenueForCategoryAndType(groupedRevenue, category, 'actual') as actualRevenue;
+                  else noActualRevenue
+                "
+            >
+              {{ actualRevenue.amount }}
+            </ng-container>
+            <ng-template #noActualRevenue>0</ng-template>
+          </td>
+
+          <td class="px-4 py-2 border">
+            <ng-container
+              *ngIf="getRevenueForCategoryAndType(groupedRevenue, category, 'planned') as plannedRevenue"
+            >
+              <button
+                class="px-2 py-1 mr-2 text-white bg-blue-500 rounded hover:bg-blue-600"
+                (click)="editRevenue(plannedRevenue, groupedRevenue.year, groupedRevenue.month)"
+              >
+                Edit Planned
+              </button>
+            </ng-container>
+            <ng-container
+              *ngIf="getRevenueForCategoryAndType(groupedRevenue, category, 'actual') as actualRevenue"
+            >
+              <button
+                class="px-2 py-1 mr-2 text-white bg-blue-500 rounded hover:bg-blue-600"
+                (click)="editRevenue(actualRevenue, groupedRevenue.year, groupedRevenue.month)"
+              >
+                Edit Actual
+              </button>
+            </ng-container>
+
+            <ng-container
+              *ngIf="getRevenueForCategoryAndType(groupedRevenue, category, 'planned')  || getRevenueForCategoryAndType(groupedRevenue, category, 'actual')"
+            >
+              <button
+                class="px-2 py-1 text-white bg-red-500 rounded hover:bg-red-600"
+                (click)="deleteBothRevenues(groupedRevenue, category)"
+              >
+                Delete
+              </button>
+            </ng-container>
+          </td>
+        </ng-container>
+      </tr>
+    </ng-container>
+    </tbody>
+
+    <tfoot>
+    <tr class="bg-gray-100 font-bold">
+      <td class="px-4 py-2 border">Total</td>
+      <ng-container *ngFor="let groupedRevenue of revenues">
+        <td class="px-4 py-2 border">
+          {{ calculateTotal(groupedRevenue, 'planned') }}
+        </td>
+        <td class="px-4 py-2 border">
+          {{ calculateTotal(groupedRevenue, 'actual') }}
+        </td>
+        <td class="px-4 py-2 border"></td>
+      </ng-container>
+    </tr>
+    </tfoot>
+  </table>
+
+  <app-revenue-modal
+    *ngIf="isModalOpen"
+    [title]="modalTitle"
+    [revenue]="currentRevenue"
+    (save)="onSave($event)"
+    (cancel)="onCancel()"
+    [isEditMode]="isEditMode"
+  ></app-revenue-modal>
+</div>

@@ -19,4 +19,12 @@ export class CategoryService {
   addCategory(data: {name:string}): Observable<any> {
     return this.http.post(this.baseUrl + 'categories', data);
   }
+
+  getRevenueCategories(): Observable<ICategory[]> {
+    return this.http.get<ICategory[]>(this.baseUrl + 'revenuecategories');
+  }
+
+  addRevenueCategory(data: {name:string}): Observable<any> {
+    return this.http.post(this.baseUrl + 'revenuecategories', data);
+  }
 }

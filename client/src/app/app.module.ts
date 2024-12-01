@@ -13,6 +13,8 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
 import {MatAutocompleteModule} from "@angular/material/autocomplete";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
+import {RevenueModalComponent} from "./modals/revenue-modal/revenue-modal.component";
+import {RevenuesComponent} from "./revenues/revenues.component";
 
 @NgModule({
   declarations: [
@@ -21,7 +23,9 @@ import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
     NavComponent,
     ExpenseModalComponent,
     ExpenseComponent,
-    HomeComponent
+    HomeComponent,
+    RevenueModalComponent,
+    RevenuesComponent
   ],
   imports: [
     BrowserModule,
