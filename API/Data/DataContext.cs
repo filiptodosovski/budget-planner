@@ -8,4 +8,6 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
     public DbSet<User?> Users { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Expense> Expenses { get; set; }
+    public DbSet<Revenue> Revenue { get; set; }
+    public DbSet<RevenueCategory> RevenueCategories { get; set; }
 }

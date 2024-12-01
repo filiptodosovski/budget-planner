@@ -17,7 +17,9 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IAuthRepository, AuthRepository>();
         services.AddScoped<ILoginService, LoginService>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<IRevenueCategoryRepository, RevenueCategoryRepository>();
         services.AddScoped<IExpenseRepository, ExpenseRepository>();
+        services.AddScoped<IRevenueRepository, RevenueRepository>();
         
         return services;
     }
