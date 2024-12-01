@@ -76,7 +76,6 @@ export class ExpenseComponent implements OnInit {
 
   editExpense(expense: IExpenseInGrouped, year: number, month: string): void {
     this.modalTitle = 'Edit Expense';
-    console.log(expense)
     this.currentExpense = { ...expense, year, month };
     this.isEditMode = true;
     this.isModalOpen = true;
@@ -107,7 +106,6 @@ export class ExpenseComponent implements OnInit {
   }
 
   onSave(expense: IExpense): void {
-    console.log(expense);
     if (expense.id) {
       this.updateExpense(expense);
     } else {

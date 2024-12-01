@@ -15,6 +15,8 @@ import {MatAutocompleteModule} from "@angular/material/autocomplete";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {RevenueModalComponent} from "./modals/revenue-modal/revenue-modal.component";
 import {RevenuesComponent} from "./revenues/revenues.component";
+import {TotalComponent} from "./total/total.component";
+
 
 @NgModule({
   declarations: [
@@ -25,7 +27,8 @@ import {RevenuesComponent} from "./revenues/revenues.component";
     ExpenseComponent,
     HomeComponent,
     RevenueModalComponent,
-    RevenuesComponent
+    RevenuesComponent,
+    TotalComponent
   ],
   imports: [
     BrowserModule,

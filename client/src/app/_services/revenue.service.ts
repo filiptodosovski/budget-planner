@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import {Observable, Subject, tap} from 'rxjs';
 import { environment } from '../../environments/environment';
 import {IGroupedRevenue, IRevenue} from "../_models/revenue";
 
@@ -10,10 +10,20 @@ import {IGroupedRevenue, IRevenue} from "../_models/revenue";
 export class RevenueService {
   private baseUrl = environment.apiUrl
 
+  private dataUpdated = new Subject<void>();
+
   constructor(private http: HttpClient) {}
 
+  get dataUpdated$(): Observable<void> {
+    return this.dataUpdated.asObservable();
+  }
+
   addRevenue(revenue: IRevenue): Observable<IRevenue> {
-    return this.http.post<IRevenue>(this.baseUrl + 'revenue', revenue);
+    return this.http.post<IRevenue>(this.baseUrl + 'revenue', revenue).pipe(
+      tap(() => {
+        this.dataUpdated.next();
+      })
+    );
   }
 
   getGroupedRevenues(): Observable<IGroupedRevenue[]> {
@@ -21,10 +31,18 @@ export class RevenueService {
   }
 
   deleteRevenue(id: number): Observable<IRevenue> {
-    return this.http.delete<IRevenue>(`${this.baseUrl + 'revenue'}/${id}`);
+    return this.http.delete<IRevenue>(`${this.baseUrl + 'revenue'}/${id}`).pipe(
+      tap(() => {
+        this.dataUpdated.next();
+      })
+    );
   }
 
   updateRevenue(id: number, revenue: IRevenue): Observable<IRevenue> {
-    return this.http.put<IRevenue>(`${this.baseUrl + 'revenue'}/${id}`, revenue);
+    return this.http.put<IRevenue>(`${this.baseUrl + 'revenue'}/${id}`, revenue).pipe(
+      tap(() => {
+        this.dataUpdated.next();
+      })
+    );
   }
 }
