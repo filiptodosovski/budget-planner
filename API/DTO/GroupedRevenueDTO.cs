@@ -4,7 +4,7 @@ public class GroupedRevenueResultDto
 {
     public int Year { get; set; }
     public string Month { get; set; }
-    public List<ExpenseDto> Expenses { get; set; }
+    public List<RevenueDto> Revenues { get; set; }
 }
 
 public class RevenueDto

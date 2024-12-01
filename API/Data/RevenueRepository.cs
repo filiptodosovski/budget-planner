@@ -64,7 +64,7 @@ public class RevenueRepository(DataContext context) : IRevenueRepository
             {
                 Year = group.Key.Year,
                 Month = group.Key.Month,
-                Expenses = group.Select(e => new ExpenseDto
+                Revenues = group.Select(e => new RevenueDto()
                 {
                     Id = e.Id,
                     Amount = e.Amount,
