@@ -6,6 +6,8 @@ import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import {IGroupedRevenue, IRevenueInGrouped} from "../_models/revenue";
 import {RevenueService} from "../_services/revenue.service";
+import autoTable from "jspdf-autotable";
+import jsPDF from "jspdf";
 
 @Component({
   selector: 'app-total',
@@ -39,6 +41,13 @@ export class TotalComponent implements OnInit {
     this.expenseService.dataUpdated$.subscribe(() => {
       this.loadExpenses();
     });
+  }
+
+
+  exportToPDF() {
+    const doc = new jsPDF();
+    autoTable(doc, { html: '#table' })
+    doc.save('my_table.pdf')
   }
 
   loadExpenses(): void {
@@ -109,12 +118,48 @@ export class TotalComponent implements OnInit {
       .reduce((sum: number, revenue: IRevenueInGrouped) => sum + revenue.amount, 0);
   }
 
-  calculateOverallBalanceForGrouped(type: string, groupedRevenue: any): number {
-    const totalRevenue = this.calculateTotalRevenue(groupedRevenue, type);
-    const totalExpenses = this.expenses.reduce((sum, groupedExpense) => {
-      return sum + this.calculateTotalExpense(groupedExpense, type);
-    }, 0);
+  calculateOverallBalanceForGrouped(
+    type: 'planned' | 'actual',
+    month: string,
+    year: number
+  ): number {
+    const totalRevenue = this.revenues
+      .filter(
+        (revGroup) =>
+          revGroup.month === month && revGroup.year === year
+      )
+      .flatMap((revGroup) => revGroup.revenues)
+      .filter((revenue) => revenue.type === type)
+      .reduce((total, revenue) => total + revenue.amount, 0);
 
-    return totalRevenue - totalExpenses;
+    const totalExpense = this.expenses
+      .filter(
+        (expGroup) =>
+          expGroup.month === month && expGroup.year === year
+      )
+      .flatMap((expGroup) => expGroup.expenses)
+      .filter((expense) => expense.type === type)
+      .reduce((total, expense) => total + expense.amount, 0);
+
+    if (totalRevenue === 0 || totalExpense === 0) {
+      return 0;
+    }
+
+    return totalRevenue - totalExpense;
+  }
+
+  get combinedDates() {
+    const allDates = [
+      ...this.revenues.map((rev) => ({ month: rev.month, year: rev.year })),
+      ...this.expenses.map((exp) => ({ month: exp.month, year: exp.year })),
+    ];
+
+    return allDates.filter(
+      (date, index, self) =>
+        index ===
+        self.findIndex(
+          (d) => d.month === date.month && d.year === date.year
+        )
+    );
   }
 }

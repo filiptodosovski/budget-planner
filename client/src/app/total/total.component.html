@@ -1,54 +1,64 @@
 <div class="p-4">
-  <table class="w-full table-auto border-collapse border border-gray-300">
+  <h1 class="font-bold text-3xl mb-2">Total</h1>
+  <button (click)="exportToPDF()" class="bg-blue-500 text-white px-4 py-2 rounded mb-2">
+    Export to PDF
+  </button>
+  <table  id="table" class="w-full table-auto border-collapse border border-gray-300">
     <thead>
     <tr class="bg-gray-200">
       <th class="px-4 py-2 border">Category</th>
-      <ng-container *ngFor="let groupedRevenue of revenues">
+      <ng-container *ngFor="let date of combinedDates">
         <th class="px-4 py-2 border">
-          {{ groupedRevenue.month }} {{ groupedRevenue.year }} (Planned)
+          {{ date.month }} {{ date.year }} (Planned)
         </th>
         <th class="px-4 py-2 border">
-          {{ groupedRevenue.month }} {{ groupedRevenue.year }} (Actual)
+          {{ date.month }} {{ date.year }} (Actual)
         </th>
       </ng-container>
     </tr>
     </thead>
 
     <tbody>
+    <!-- Revenue Categories -->
     <ng-container *ngFor="let category of revenueCategories">
       <tr>
         <td class="px-4 py-2 border">{{ category }}</td>
 
-        <ng-container *ngFor="let groupedRevenue of revenues">
-          <td class="px-4 py-2 border">
-            <ng-container
-              *ngIf="
-                      getRevenueForCategoryAndType(groupedRevenue, category, 'planned') as plannedRevenue;
-                      else noPlannedRevenue
-                    "
-            >
-              {{ plannedRevenue.amount }}
-            </ng-container>
-            <ng-template #noPlannedRevenue>0</ng-template>
-          </td>
-
-          <td class="px-4 py-2 border">
-            <ng-container
-              *ngIf="
-                      getRevenueForCategoryAndType(groupedRevenue, category, 'actual') as actualRevenue;
-                      else noActualRevenue
-                    "
-            >
-              {{ actualRevenue.amount }}
-            </ng-container>
-            <ng-template #noActualRevenue>0</ng-template>
-          </td>
+        <!-- Check if there are any revenues data -->
+        <ng-container *ngIf="revenues.length === 0; else revenueData">
+          <td class="px-4 py-2 border">0</td>
+          <td class="px-4 py-2 border">0</td>
         </ng-container>
+
+        <!-- Revenue Data if revenues are available -->
+        <ng-template #revenueData>
+          <ng-container *ngFor="let groupedRevenue of revenues">
+            <td class="px-4 py-2 border">
+              <ng-container
+                *ngIf="getRevenueForCategoryAndType(groupedRevenue, category, 'planned') as plannedRevenue; else noPlannedRevenue"
+              >
+                {{ plannedRevenue.amount }}
+              </ng-container>
+              <ng-template #noPlannedRevenue>0</ng-template>
+            </td>
+
+            <td class="px-4 py-2 border">
+              <ng-container
+                *ngIf="getRevenueForCategoryAndType(groupedRevenue, category, 'actual') as actualRevenue; else noActualRevenue"
+              >
+                {{ actualRevenue.amount }}
+              </ng-container>
+              <ng-template #noActualRevenue>0</ng-template>
+            </td>
+          </ng-container>
+        </ng-template>
       </tr>
     </ng-container>
 
+    <!-- Revenue Total -->
     <tr class="bg-gray-100 font-bold">
       <td class="px-4 py-2 border">Revenue Total</td>
+
       <ng-container *ngFor="let groupedRevenue of revenues">
         <td class="px-4 py-2 border">
           {{ calculateTotalRevenue(groupedRevenue, 'planned') }}
@@ -57,42 +67,54 @@
           {{ calculateTotalRevenue(groupedRevenue, 'actual') }}
         </td>
       </ng-container>
+
+      <!-- If no revenue data, show 0 -->
+      <ng-container *ngIf="revenues.length === 0">
+        <td class="px-4 py-2 border">0</td>
+        <td class="px-4 py-2 border">0</td>
+      </ng-container>
     </tr>
 
+    <!-- Expense Categories -->
     <ng-container *ngFor="let category of categories">
       <tr>
         <td class="px-4 py-2 border">{{ category }}</td>
 
-        <ng-container *ngFor="let groupedExpense of expenses">
-          <td class="px-4 py-2 border">
-            <ng-container
-              *ngIf="
-                    getExpenseForCategoryAndType(groupedExpense, category, 'planned') as plannedExpense;
-                    else noPlannedExpense
-                  "
-            >
-              {{ plannedExpense.amount }}
-            </ng-container>
-            <ng-template #noPlannedExpense>0</ng-template>
-          </td>
-
-          <td class="px-4 py-2 border">
-            <ng-container
-              *ngIf="
-                    getExpenseForCategoryAndType(groupedExpense, category, 'actual') as actualExpense;
-                    else noActualExpense
-                  "
-            >
-              {{ actualExpense.amount }}
-            </ng-container>
-            <ng-template #noActualExpense>0</ng-template>
-          </td>
+        <!-- Check if there are any expenses data -->
+        <ng-container *ngIf="expenses.length === 0; else expenseData">
+          <td class="px-4 py-2 border">0</td>
+          <td class="px-4 py-2 border">0</td>
         </ng-container>
+
+        <!-- Expense Data if expenses are available -->
+        <ng-template #expenseData>
+          <ng-container *ngFor="let groupedExpense of expenses">
+            <td class="px-4 py-2 border">
+              <ng-container
+                *ngIf="getExpenseForCategoryAndType(groupedExpense, category, 'planned') as plannedExpense; else noPlannedExpense"
+              >
+                {{ plannedExpense.amount }}
+              </ng-container>
+              <ng-template #noPlannedExpense>0</ng-template>
+            </td>
+
+            <td class="px-4 py-2 border">
+              <ng-container
+                *ngIf="getExpenseForCategoryAndType(groupedExpense, category, 'actual') as actualExpense; else noActualExpense"
+              >
+                {{ actualExpense.amount }}
+              </ng-container>
+              <ng-template #noActualExpense>0</ng-template>
+            </td>
+          </ng-container>
+        </ng-template>
       </tr>
     </ng-container>
 
+    <!-- Expense Total -->
     <tr class="bg-gray-100 font-bold">
       <td class="px-4 py-2 border">Expense Total</td>
+
       <ng-container *ngFor="let groupedExpense of expenses">
         <td class="px-4 py-2 border">
           {{ calculateTotalExpense(groupedExpense, 'planned') }}
@@ -101,6 +123,12 @@
           {{ calculateTotalExpense(groupedExpense, 'actual') }}
         </td>
       </ng-container>
+
+      <!-- If no expense data, show 0 -->
+      <ng-container *ngIf="expenses.length === 0">
+        <td class="px-4 py-2 border">0</td>
+        <td class="px-4 py-2 border">0</td>
+      </ng-container>
     </tr>
     </tbody>
 
@@ -108,16 +136,15 @@
     <tr class="bg-gray-200 font-bold">
       <td class="px-4 py-2 border">Overall Total</td>
 
-      <ng-container *ngFor="let groupedRevenue of revenues">
+      <ng-container *ngFor="let date of combinedDates">
         <td class="px-4 py-2 border">
-          {{ calculateOverallBalanceForGrouped('planned', groupedRevenue) }}
+          {{ calculateOverallBalanceForGrouped('planned', date.month, date.year) || 0 }}
         </td>
         <td class="px-4 py-2 border">
-          {{ calculateOverallBalanceForGrouped('actual', groupedRevenue) }}
+          {{ calculateOverallBalanceForGrouped('actual', date.month, date.year) || 0 }}
         </td>
       </ng-container>
     </tr>
     </tfoot>
-
   </table>
 </div>
